@@ -381,6 +381,38 @@ def update_batch_settings_in_workflow(workflow, batch_size=None, overlap=None):
     return False
 
 
+def generate_output_folder_name(video_path, custom_name=None):
+    """
+    Generate a unique output folder name based on video and timestamp.
+    
+    Args:
+        video_path: Path to the video file
+        custom_name: Optional custom folder name
+        
+    Returns:
+        Unique folder name string
+    """
+    from datetime import datetime
+    
+    if custom_name:
+        return custom_name
+    
+    # Get video filename without extension
+    video_name = os.path.splitext(os.path.basename(video_path))[0]
+    
+    # Clean filename (remove special characters)
+    video_name = "".join(c for c in video_name if c.isalnum() or c in (' ', '-', '_'))
+    video_name = video_name.strip().replace(' ', '_')
+    
+    # Add timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Combine: videoname_timestamp
+    folder_name = f"{video_name}_{timestamp}"
+    
+    return folder_name
+
+
 def parse_arguments(args):
     """
     Parse command line arguments (supports both positional and flag-based).

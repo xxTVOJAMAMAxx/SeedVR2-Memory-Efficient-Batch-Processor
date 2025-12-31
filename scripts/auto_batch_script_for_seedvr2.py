@@ -353,6 +353,38 @@ def update_output_folder_in_workflow(workflow, new_folder):
     return False
 
 
+def generate_output_folder_name(video_path, custom_name=None):
+    """
+    Generate a unique output folder name based on video and timestamp.
+    
+    Args:
+        video_path: Path to the video file
+        custom_name: Optional custom folder name
+        
+    Returns:
+        Unique folder name string
+    """
+    from datetime import datetime
+    
+    if custom_name:
+        return custom_name
+    
+    # Get video filename without extension
+    video_name = os.path.splitext(os.path.basename(video_path))[0]
+    
+    # Clean filename (remove special characters)
+    video_name = "".join(c for c in video_name if c.isalnum() or c in (' ', '-', '_'))
+    video_name = video_name.strip().replace(' ', '_')
+    
+    # Add timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Combine: videoname_timestamp
+    folder_name = f"{video_name}_{timestamp}"
+    
+    return folder_name
+
+
 def print_usage():
     """Print usage instructions"""
     print("ComfyUI Auto Batch Queue Script")
@@ -431,10 +463,34 @@ def main():
         if not update_video_path_in_workflow(workflow, video_path_arg):
             print("⚠ Warning: Could not find video loader node to update")
     
-    # Update output folder if provided
+    # Generate output folder name
+    # Priority: 1) Command line arg, 2) Auto-generate from video, 3) Use workflow default
     if output_folder_arg:
-        if not update_output_folder_in_workflow(workflow, output_folder_arg):
-            print("⚠ Warning: Could not find disk saver node to update")
+        # User specified output folder
+        final_output_folder = output_folder_arg
+    else:
+        # Auto-generate from video path
+        # Get video path from either command line or workflow
+        video_path_for_folder = video_path_arg
+        if not video_path_for_folder:
+            # Extract from workflow
+            for node_id, node_data in workflow.items():
+                if "class_type" in node_data and "TrueBatchedVideoLoader" in node_data["class_type"]:
+                    if "inputs" in node_data:
+                        video_path_for_folder = node_data["inputs"].get("video_path", "")
+                        break
+        
+        if video_path_for_folder:
+            final_output_folder = generate_output_folder_name(video_path_for_folder)
+        else:
+            # Fallback: use timestamp only
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            final_output_folder = f"upscaled_{timestamp}"
+    
+    # Update output folder in workflow
+    if not update_output_folder_in_workflow(workflow, final_output_folder):
+        print("⚠ Warning: Could not find disk saver node to update")
     
     # Determine number of batches
     num_batches = None

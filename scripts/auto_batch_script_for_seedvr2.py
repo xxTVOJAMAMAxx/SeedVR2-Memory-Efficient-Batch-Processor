@@ -353,7 +353,93 @@ def update_output_folder_in_workflow(workflow, new_folder):
     return False
 
 
-def generate_output_folder_name(video_path, custom_name=None):
+def update_batch_settings_in_workflow(workflow, batch_size=None, overlap=None):
+    """
+    Update batch_size and overlap in the workflow.
+    
+    Args:
+        workflow: Workflow dictionary
+        batch_size: New batch size (None to keep existing)
+        overlap: New overlap value (None to keep existing)
+        
+    Returns:
+        True if node found, False otherwise
+    """
+    for node_id, node_data in workflow.items():
+        if "class_type" in node_data:
+            if "TrueBatchedVideoLoader" in node_data["class_type"]:
+                if "inputs" in node_data:
+                    if batch_size is not None:
+                        old_batch = node_data["inputs"].get("batch_size", "")
+                        node_data["inputs"]["batch_size"] = batch_size
+                        print(f"⚙️ Updated batch_size: {old_batch} → {batch_size}")
+                    if overlap is not None:
+                        old_overlap = node_data["inputs"].get("overlap", "")
+                        node_data["inputs"]["overlap"] = overlap
+                        print(f"⚙️ Updated overlap: {old_overlap} → {overlap}")
+                    return True
+    return False
+
+
+def parse_arguments(args):
+    """
+    Parse command line arguments (supports both positional and flag-based).
+    
+    Args:
+        args: sys.argv[2:] (arguments after workflow path)
+        
+    Returns:
+        Dictionary with parsed arguments
+    """
+    result = {
+        'video_path': None,
+        'output_folder': None,
+        'batch_size': None,
+        'overlap': None,
+        'start_batch': 0
+    }
+    
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        
+        # Flag-based arguments
+        if arg in ['--video', '-v']:
+            if i + 1 < len(args):
+                result['video_path'] = args[i + 1]
+                i += 2
+                continue
+        elif arg in ['--output', '-o']:
+            if i + 1 < len(args):
+                result['output_folder'] = args[i + 1]
+                i += 2
+                continue
+        elif arg in ['--batch-size', '-b']:
+            if i + 1 < len(args):
+                result['batch_size'] = int(args[i + 1])
+                i += 2
+                continue
+        elif arg in ['--overlap']:
+            if i + 1 < len(args):
+                result['overlap'] = int(args[i + 1])
+                i += 2
+                continue
+        elif arg in ['--start']:
+            if i + 1 < len(args):
+                result['start_batch'] = int(args[i + 1])
+                i += 2
+                continue
+        
+        # Positional arguments (backward compatibility)
+        # Order: video_path, output_folder
+        if result['video_path'] is None and not arg.isdigit():
+            result['video_path'] = arg
+        elif result['output_folder'] is None and not arg.isdigit():
+            result['output_folder'] = arg
+        
+        i += 1
+    
+    return result
     """
     Generate a unique output folder name based on video and timestamp.
     
@@ -391,29 +477,30 @@ def print_usage():
     print("Part of SeedVR2-Memory-Efficient-Batch-Processor")
     print("="*60)
     print("\nUsage:")
-    print("  python auto_batch_queue.py <workflow.json> [video_path] [output_folder] [num_batches] [start_batch]")
-    print("\nArguments:")
-    print("  workflow.json  - Your workflow in API format (required)")
-    print("  video_path     - Video file path (optional, auto-detected from workflow)")
-    print("  output_folder  - Output folder name (optional, uses workflow default)")
-    print("  num_batches    - Total batches (optional, auto-detected from video)")
-    print("  start_batch    - Start from this batch (optional, default: 0)")
+    print("  python auto_batch_queue.py <workflow.json> [options]")
+    print("\nOptions (in order):")
+    print("  --video <path>        Video file path")
+    print("  --output <folder>     Output folder name")
+    print("  --batch-size <n>      Frames per batch (default: from workflow)")
+    print("  --overlap <n>         Frame overlap between batches (default: from workflow)")
+    print("  --start <n>           Start from batch N (default: 0)")
+    print("\nSimple Usage (positional args):")
+    print("  workflow.json [video_path] [output_folder]")
     print("\nExamples:")
     print("  # Auto-detect everything")
     print("  python auto_batch_queue.py workflow.json")
     print()
-    print("  # Specify video (use full path if it has spaces)")
-    print("  python auto_batch_queue.py workflow.json my_video.mp4")
-    print("  python auto_batch_queue.py workflow.json \"C:\\path\\to\\my video.mp4\"")
+    print("  # Specify video")
+    print("  python auto_batch_queue.py workflow.json --video my_video.mp4")
     print()
-    print("  # Specify video and output folder")
+    print("  # Custom batch settings")
+    print("  python auto_batch_queue.py workflow.json --video my_video.mp4 --batch-size 9 --overlap 3")
+    print()
+    print("  # Positional (backward compatible)")
     print("  python auto_batch_queue.py workflow.json my_video.mp4 output_folder")
-    print()
-    print("  # Manual batch count and custom start")
-    print("  python auto_batch_queue.py workflow.json my_video.mp4 output_folder 100 10")
     print("\nFeatures:")
     print("  ✓ Automatic video analysis and batch calculation")
-    print("  ✓ Dynamic workflow updates for different videos")
+    print("  ✓ Dynamic workflow updates (video, batch size, overlap)")
     print("  ✓ Memory-efficient processing (loads one batch at a time)")
     print("  ✓ Direct-to-disk saving (no RAM accumulation)")
     print("\nRequirements:")
@@ -446,22 +533,24 @@ def main():
         print(f"ERROR: Could not load workflow: {e}")
         sys.exit(1)
     
-    # Parse optional arguments
-    video_path_arg = sys.argv[2] if len(sys.argv) >= 3 else None
-    output_folder_arg = sys.argv[3] if len(sys.argv) >= 4 else None
-    num_batches_arg = sys.argv[4] if len(sys.argv) >= 5 else None
-    start_batch_arg = sys.argv[5] if len(sys.argv) >= 6 else None
+    # Parse command line arguments
+    args = parse_arguments(sys.argv[2:])
     
-    # Backward compatibility: if second arg is a number, treat as num_batches
-    if video_path_arg and video_path_arg.isdigit():
-        num_batches_arg = video_path_arg
-        video_path_arg = None
-        output_folder_arg = None
+    video_path_arg = args['video_path']
+    output_folder_arg = args['output_folder']
+    batch_size_arg = args['batch_size']
+    overlap_arg = args['overlap']
+    start_batch = args['start_batch']
     
     # Update video path if provided
     if video_path_arg:
         if not update_video_path_in_workflow(workflow, video_path_arg):
             print("⚠ Warning: Could not find video loader node to update")
+    
+    # Update batch settings if provided
+    if batch_size_arg is not None or overlap_arg is not None:
+        if not update_batch_settings_in_workflow(workflow, batch_size_arg, overlap_arg):
+            print("⚠ Warning: Could not find video loader node to update batch settings")
     
     # Generate output folder name
     # Priority: 1) Command line arg, 2) Auto-generate from video, 3) Use workflow default
@@ -495,27 +584,20 @@ def main():
     # Determine number of batches
     num_batches = None
     
-    if num_batches_arg:
-        # Manual override
-        num_batches = int(num_batches_arg)
-        print(f"Using manually specified batch count: {num_batches}")
-    else:
-        # Auto-detect from video
-        print("Attempting to auto-detect batch count from video...")
-        num_batches = calculate_batches_from_video(workflow)
-        
-        if num_batches is None:
-            # Fallback to manual input
-            try:
-                num_batches = int(input("\nCould not auto-detect. Enter total number of batches: "))
-            except (ValueError, KeyboardInterrupt):
-                print("\nCancelled.")
-                sys.exit(1)
+    # Auto-detect from video (will use updated batch_size/overlap if provided)
+    print("Attempting to auto-detect batch count from video...")
+    num_batches = calculate_batches_from_video(workflow)
+    
+    if num_batches is None:
+        # Fallback to manual input
+        try:
+            num_batches = int(input("\nCould not auto-detect. Enter total number of batches: "))
+        except (ValueError, KeyboardInterrupt):
+            print("\nCancelled.")
+            sys.exit(1)
     
     # Get start batch
-    start_batch = 0
-    if start_batch_arg:
-        start_batch = int(start_batch_arg)
+    start_batch = args['start_batch']
     
     # Confirmation for large batch counts
     if num_batches - start_batch > 10:

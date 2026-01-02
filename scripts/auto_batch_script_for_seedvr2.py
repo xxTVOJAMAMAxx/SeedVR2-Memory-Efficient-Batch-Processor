@@ -198,7 +198,7 @@ def calculate_batches(workflow):
         return None
 
 
-def update_workflow(workflow, video_path=None, output_folder=None, batch_size=None, overlap=None):
+def update_workflow(workflow, video_path=None, output_folder=None, batch_size=None, overlap=None, image_format=None):
     """Update workflow parameters"""
     for node_id, node_data in workflow.items():
         if "class_type" not in node_data:
@@ -217,16 +217,25 @@ def update_workflow(workflow, video_path=None, output_folder=None, batch_size=No
                     print(f"⚙️  Overlap: {overlap}")
         
         if "BatchFrameToDiskSaver" in node_data["class_type"]:
-            if "inputs" in node_data and output_folder:
-                node_data["inputs"]["output_folder_name"] = output_folder
-                print(f"📁 Output: {output_folder}")
+            if "inputs" in node_data:
+                if output_folder:
+                    node_data["inputs"]["output_folder_name"] = output_folder
+                    print(f"📁 Output: {output_folder}")
+                if image_format:
+                    node_data["inputs"]["image_format"] = image_format
+                    print(f"🖼️  Format: {image_format}")
 
 
 def main():
     """Main entry point"""
     
     if len(sys.argv) < 2:
-        print("Usage: python script.py workflow.json --video PATH --batch-size N --overlap N")
+        print("Usage: python script.py workflow.json --video PATH --batch-size N --overlap N --format FORMAT")
+        print("\nOptions:")
+        print("  --video PATH         Video file path")
+        print("  --batch-size N       Batch size (e.g., 21)")
+        print("  --overlap N          Overlap (e.g., 3)")
+        print("  --format FORMAT      Image format: PNG or WebP (default: from workflow)")
         sys.exit(1)
     
     workflow_path = sys.argv[1]
@@ -247,6 +256,9 @@ def main():
             i += 2
         elif sys.argv[i] == "--overlap" and i + 1 < len(sys.argv):
             args['overlap'] = int(sys.argv[i + 1])
+            i += 2
+        elif sys.argv[i] == "--format" and i + 1 < len(sys.argv):
+            args['format'] = sys.argv[i + 1]
             i += 2
         else:
             i += 1
@@ -313,7 +325,8 @@ def main():
         video_path=args.get('video'),
         output_folder=output_folder,
         batch_size=args.get('batch_size'),
-        overlap=args.get('overlap')
+        overlap=args.get('overlap'),
+        image_format=args.get('format')
     )
     
     # Save workflow

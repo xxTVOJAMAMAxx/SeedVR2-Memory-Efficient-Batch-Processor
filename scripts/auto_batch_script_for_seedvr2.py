@@ -208,7 +208,7 @@ def update_workflow(workflow, video_path=None, output_folder=None, batch_size=No
             if "inputs" in node_data:
                 if video_path:
                     node_data["inputs"]["video_path"] = video_path
-                    print(f"📝 Video: {os.path.basename(video_path)}")
+                    print(f"📹 Video: {os.path.basename(video_path)}")
                 if batch_size is not None:
                     node_data["inputs"]["batch_size"] = batch_size
                     print(f"⚙️  Batch size: {batch_size}")
@@ -341,12 +341,11 @@ def main():
     if num_batches is None:
         num_batches = int(input("Enter number of batches: "))
     
-    # Confirmation
-    if num_batches > 10:
-        confirm = input(f"\nQueue {num_batches} batches? (yes/no): ").lower()
-        if confirm not in ['yes', 'y']:
-            print("Cancelled.")
-            sys.exit(0)
+    # ALWAYS ask for confirmation
+    confirm = input(f"\n{'='*60}\nQueue {num_batches} batches? (yes/no): ").lower()
+    if confirm not in ['yes', 'y']:
+        print("Cancelled.")
+        sys.exit(0)
     
     # Queue batches
     queue = ComfyUIBatchQueue()

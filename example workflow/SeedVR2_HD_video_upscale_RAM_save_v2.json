@@ -4,10 +4,10 @@
       "seed": 42,
       "resolution": 1080,
       "max_resolution": 0,
-      "batch_size": 33,
+      "batch_size": 21,
       "uniform_batch_size": true,
       "color_correction": "lab",
-      "temporal_overlap": 4,
+      "temporal_overlap": 0,
       "prepend_frames": 0,
       "input_noise_scale": 0,
       "latent_noise_scale": 0,
@@ -67,9 +67,9 @@
   },
   "30": {
     "inputs": {
-      "video_path": "your_video.mp4",
-      "batch_size": 33,
-      "overlap": 4,
+      "video_path": "E:\\comfy trellis 2.0\\ComfyUI_windows_portable\\ComfyUI\\input\\originalni materijal 99 14klip medium slower hevc_V1-0001",
+      "batch_size": 21,
+      "overlap": 0,
       "batch_index": 0,
       "force_size": "Disabled"
     },
@@ -92,9 +92,10 @@
         "30",
         5
       ],
-      "overlap": 4,
+      "overlap": 3,
       "output_folder_name": "upscaled_output",
-      "png_compression": 9,
+      "image_format": "WebP",
+      "compression_quality": 95,
       "processed_batch": [
         "10",
         0

@@ -27,7 +27,7 @@ ComfyUI converts videos to uncompressed 32-bit float tensors (~24MB per frame), 
 1. **Install custom nodes:**
    ```bash
    # Copy to ComfyUI/custom_nodes/
-   ComfyUI/custom_nodes/dynamic_batch_loader.py
+   ComfyUI/custom_nodes/diagnostic_batch_loader_v3.py
    ```
 
 2. **Install automation script:**
@@ -39,7 +39,7 @@ ComfyUI converts videos to uncompressed 32-bit float tensors (~24MB per frame), 
 3. **Import example workflow:**
    ```bash
    # Load in ComfyUI
-   examples/workflow_example.json
+   examples/SeedVR2_HD_video_upscale_RAM_save_v2.json
    ```
 
 4. **Restart ComfyUI**

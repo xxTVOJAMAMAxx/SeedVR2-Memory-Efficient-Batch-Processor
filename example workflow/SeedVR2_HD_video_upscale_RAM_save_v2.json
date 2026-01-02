@@ -4,7 +4,7 @@
       "seed": 42,
       "resolution": 1080,
       "max_resolution": 0,
-      "batch_size": 21,
+      "batch_size": 33,
       "uniform_batch_size": true,
       "color_correction": "lab",
       "temporal_overlap": 0,
@@ -43,7 +43,7 @@
       "decode_tile_overlap": 128,
       "tile_debug": "false",
       "offload_device": "cpu",
-      "cache_model": false
+      "cache_model": true
     },
     "class_type": "SeedVR2LoadVAEModel",
     "_meta": {
@@ -52,12 +52,12 @@
   },
   "14": {
     "inputs": {
-      "model": "seedvr2_ema_3b_fp16.safetensors",
+      "model": "seedvr2_ema_7b_fp16.safetensors",
       "device": "cuda:0",
       "blocks_to_swap": 32,
       "swap_io_components": false,
       "offload_device": "cpu",
-      "cache_model": false,
+      "cache_model": true,
       "attention_mode": "sdpa"
     },
     "class_type": "SeedVR2LoadDiTModel",
@@ -67,9 +67,9 @@
   },
   "30": {
     "inputs": {
-      "video_path": "E:\\comfy trellis 2.0\\ComfyUI_windows_portable\\ComfyUI\\input\\originalni materijal 99 14klip medium slower hevc_V1-0001",
-      "batch_size": 21,
-      "overlap": 0,
+      "video_path": "",
+      "batch_size": 33,
+      "overlap": 3,
       "batch_index": 0,
       "force_size": "Disabled"
     },
@@ -94,8 +94,8 @@
       ],
       "overlap": 3,
       "output_folder_name": "upscaled_output",
-      "image_format": "WebP",
-      "compression_quality": 95,
+      "image_format": "PNG",
+      "compression_quality": 75,
       "processed_batch": [
         "10",
         0
@@ -103,7 +103,40 @@
     },
     "class_type": "BatchFrameToDiskSaver",
     "_meta": {
-      "title": "Batch Frame to Disk Saver (No RAM Accumulation)"
+      "title": "Batch Frame to Disk Saver (No RAM Accumulation) [DIAGNOSTIC]"
+    }
+  },
+  "37": {
+    "inputs": {
+      "output_folder": [
+        "35",
+        0
+      ],
+      "fps": [
+        "30",
+        4
+      ],
+      "export_mode": "Both",
+      "progress_codec": "H.264",
+      "progress_quality": "Fast",
+      "final_codec": "H.265",
+      "final_quality": "High",
+      "container": "MP4",
+      "update_mode": "Auto (Smart)",
+      "manual_min_frames": 30,
+      "delete_segments": true,
+      "is_complete": [
+        "35",
+        2
+      ],
+      "frames_saved": [
+        "35",
+        1
+      ]
+    },
+    "class_type": "VideoExporterFromFrames",
+    "_meta": {
+      "title": "Video Exporter from Frames (Auto-Update)"
     }
   }
 }

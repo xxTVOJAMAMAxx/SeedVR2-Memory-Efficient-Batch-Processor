@@ -242,6 +242,7 @@ Apache 2.0
 ## 🙏 Credits
 
 - **SeedVR2**: Original video upscaling model by ByteDance Seed
+- **SeedVR2 in ComfyUI**: Huge thanks to Nymz for his work!
 - **ComfyUI**: Node-based UI framework
 - **Community**: Thank you to everyone who tested and provided feedback!
 

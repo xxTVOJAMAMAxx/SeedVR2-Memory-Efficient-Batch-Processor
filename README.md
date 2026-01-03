@@ -28,7 +28,7 @@ ComfyUI loads entire videos as uncompressed 32-bit float tensors (~24MB per fram
    └── node_video_exporter_v3.py  # includes TrueBatchedVideoLoader
    ```
 
-2. **Copy automation script:**
+2. **Copy automation script and workflow to python_embeded:**
    ```bash
    # Place in ComfyUI/python_embeded/ or your Python directory
    script_auto_batch_smart_naming_v9.py
@@ -45,8 +45,9 @@ ComfyUI loads entire videos as uncompressed 32-bit float tensors (~24MB per fram
    - Open workflow in ComfyUI
    - Set your video path in `TrueBatchedVideoLoaderWithPath` node
    - Set batch size (e.g., 21) and overlap (e.g., 3)
-   - Save workflow as JSON (e.g., `my_workflow.json`)
-
+   - Export workflow as API (e.g., `my_workflow.json`)
+   - Move the exported .json file to python_embeded folder
+   - 
 **2. Run the script:**
    ```bash
    python script_auto_batch_smart_naming_v9.py my_workflow.json

@@ -1,0 +1,927 @@
+{
+  "id": "0674b518-6b4c-417c-9c6c-918e99f1dfa9",
+  "revision": 0,
+  "last_node_id": 42,
+  "last_link_id": 55,
+  "nodes": [
+    {
+      "id": 13,
+      "type": "SeedVR2LoadVAEModel",
+      "pos": [
+        117.2008043830333,
+        886.8353928534643
+      ],
+      "size": [
+        321.7833312988281,
+        298
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "torch_compile_args",
+          "shape": 7,
+          "type": "TORCH_COMPILE_ARGS",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SEEDVR2_VAE",
+          "type": "SEEDVR2_VAE",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "seedvr2_videoupscaler",
+        "ver": "4490bd1f482e026674543386bb2a4d176da245b9",
+        "Node name for S&R": "SeedVR2LoadVAEModel"
+      },
+      "widgets_values": [
+        "ema_vae_fp16.safetensors",
+        "cuda:0",
+        true,
+        1024,
+        128,
+        true,
+        768,
+        128,
+        "false",
+        "cpu",
+        true
+      ]
+    },
+    {
+      "id": 14,
+      "type": "SeedVR2LoadDiTModel",
+      "pos": [
+        141.56861059233057,
+        576.6342047482856
+      ],
+      "size": [
+        317.51666870117185,
+        202
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "torch_compile_args",
+          "shape": 7,
+          "type": "TORCH_COMPILE_ARGS",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "SEEDVR2_DIT",
+          "type": "SEEDVR2_DIT",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "seedvr2_videoupscaler",
+        "ver": "4490bd1f482e026674543386bb2a4d176da245b9",
+        "Node name for S&R": "SeedVR2LoadDiTModel"
+      },
+      "widgets_values": [
+        "seedvr2_ema_7b_fp16.safetensors",
+        "cuda:0",
+        32,
+        true,
+        "cpu",
+        true,
+        "sdpa"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "SeedVR2VideoUpscaler",
+      "pos": [
+        607.5833190917969,
+        130
+      ],
+      "size": [
+        329.93334045410154,
+        386
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 38
+        },
+        {
+          "name": "dit",
+          "type": "SEEDVR2_DIT",
+          "link": 13
+        },
+        {
+          "name": "vae",
+          "type": "SEEDVR2_VAE",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            18,
+            23,
+            24
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "seedvr2_videoupscaler",
+        "ver": "4490bd1f482e026674543386bb2a4d176da245b9",
+        "Node name for S&R": "SeedVR2VideoUpscaler"
+      },
+      "widgets_values": [
+        42,
+        "randomize",
+        1080,
+        0,
+        21,
+        true,
+        "lab",
+        0,
+        0,
+        0,
+        0,
+        "cpu",
+        false
+      ]
+    },
+    {
+      "id": 37,
+      "type": "VideoExporterFromFrames",
+      "pos": [
+        1622.989580414876,
+        -181.9126579926077
+      ],
+      "size": [
+        385.1999877929687,
+        426
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "widget": {
+            "name": "output_folder"
+          },
+          "link": 19
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "widget": {
+            "name": "fps"
+          },
+          "link": 43
+        },
+        {
+          "name": "is_complete",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "is_complete"
+          },
+          "link": 21
+        },
+        {
+          "name": "frames_saved",
+          "shape": 7,
+          "type": "INT",
+          "widget": {
+            "name": "frames_saved"
+          },
+          "link": 22
+        }
+      ],
+      "outputs": [
+        {
+          "name": "progress_video_path",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "final_video_paths",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "encoding_active",
+          "type": "BOOLEAN",
+          "links": null
+        },
+        {
+          "name": "batch_info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VideoExporterFromFrames"
+      },
+      "widgets_values": [
+        "",
+        50,
+        "Both",
+        "H.265",
+        "Fast",
+        "H.265",
+        "High",
+        "MP4",
+        "Auto (Smart)",
+        30,
+        true,
+        false,
+        0
+      ]
+    },
+    {
+      "id": 35,
+      "type": "BatchFrameToDiskSaver",
+      "pos": [
+        987.3476467620517,
+        -149.51307122429094
+      ],
+      "size": [
+        537.3833374023437,
+        242
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "processed_batch",
+          "type": "IMAGE",
+          "link": 18
+        },
+        {
+          "name": "batch_index",
+          "type": "INT",
+          "widget": {
+            "name": "batch_index"
+          },
+          "link": 39
+        },
+        {
+          "name": "total_batches",
+          "type": "INT",
+          "widget": {
+            "name": "total_batches"
+          },
+          "link": 53
+        },
+        {
+          "name": "start_frame_number",
+          "type": "INT",
+          "widget": {
+            "name": "start_frame_number"
+          },
+          "link": 47
+        }
+      ],
+      "outputs": [
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "links": [
+            19
+          ]
+        },
+        {
+          "name": "frames_saved",
+          "type": "INT",
+          "links": [
+            22
+          ]
+        },
+        {
+          "name": "is_complete",
+          "type": "BOOLEAN",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BatchFrameToDiskSaver"
+      },
+      "widgets_values": [
+        0,
+        0,
+        0,
+        3,
+        "upscaled_output",
+        "PNG",
+        95
+      ]
+    },
+    {
+      "id": 42,
+      "type": "TrueBatchedVideoLoaderWithPath",
+      "pos": [
+        23.518207151912655,
+        -186.2088919405404
+      ],
+      "size": [
+        406.9,
+        274
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "batch_frames",
+          "type": "IMAGE",
+          "links": [
+            38
+          ]
+        },
+        {
+          "name": "batch_index",
+          "type": "INT",
+          "links": [
+            39,
+            40,
+            41
+          ]
+        },
+        {
+          "name": "total_batches",
+          "type": "INT",
+          "links": [
+            53,
+            54,
+            55
+          ]
+        },
+        {
+          "name": "is_last",
+          "type": "BOOLEAN",
+          "links": null
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "links": [
+            43,
+            44,
+            45,
+            46
+          ]
+        },
+        {
+          "name": "start_frame_number",
+          "type": "INT",
+          "links": [
+            47,
+            48,
+            49
+          ]
+        },
+        {
+          "name": "video_source_path",
+          "type": "STRING",
+          "links": [
+            50,
+            51
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TrueBatchedVideoLoaderWithPath"
+      },
+      "widgets_values": [
+        "E:\\comfy trellis 2.0\\ComfyUI_windows_portable\\ComfyUI\\input\\originalni materijal 99 14klip medium slower hevc_V1-0001_deinterlaced_50fps.mp4",
+        21,
+        3,
+        0,
+        "Disabled"
+      ]
+    },
+    {
+      "id": 39,
+      "type": "DirectVideoWriterAdvanced",
+      "pos": [
+        1003.0417832909972,
+        663.4883716283105
+      ],
+      "size": [
+        427.8166564941406,
+        422
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "processed_batch",
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "name": "batch_index",
+          "type": "INT",
+          "widget": {
+            "name": "batch_index"
+          },
+          "link": 41
+        },
+        {
+          "name": "total_batches",
+          "type": "INT",
+          "widget": {
+            "name": "total_batches"
+          },
+          "link": 55
+        },
+        {
+          "name": "start_frame_number",
+          "type": "INT",
+          "widget": {
+            "name": "start_frame_number"
+          },
+          "link": 49
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "widget": {
+            "name": "fps"
+          },
+          "link": 46
+        },
+        {
+          "name": "video_source_path",
+          "type": "STRING",
+          "widget": {
+            "name": "video_source_path"
+          },
+          "link": 50
+        }
+      ],
+      "outputs": [
+        {
+          "name": "progress_video",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "final_videos",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "frames_written",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "is_complete",
+          "type": "BOOLEAN",
+          "links": null
+        },
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DirectVideoWriterAdvanced"
+      },
+      "widgets_values": [
+        0,
+        0,
+        0,
+        3,
+        30,
+        "upscaled_video",
+        "H.264",
+        "Fast",
+        1,
+        "H.264",
+        "High Quality",
+        "MP4"
+      ]
+    },
+    {
+      "id": 41,
+      "type": "VideoExporterFromFrames",
+      "pos": [
+        1711.6298326509311,
+        392.5370056456385
+      ],
+      "size": [
+        385.1999877929687,
+        426
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "widget": {
+            "name": "fps"
+          },
+          "link": 45
+        }
+      ],
+      "outputs": [
+        {
+          "name": "progress_video_path",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "final_video_paths",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "encoding_active",
+          "type": "BOOLEAN",
+          "links": null
+        },
+        {
+          "name": "batch_info",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VideoExporterFromFrames"
+      },
+      "widgets_values": [
+        "",
+        50,
+        "Both",
+        "H.264",
+        "Fast",
+        "H.264",
+        "High",
+        "MP4",
+        "Auto (Smart)",
+        18,
+        true,
+        false,
+        0
+      ]
+    },
+    {
+      "id": 38,
+      "type": "DirectVideoWriter",
+      "pos": [
+        1020.7604954625815,
+        186.23154722230035
+      ],
+      "size": [
+        364.4333251953125,
+        378
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 4,
+      "inputs": [
+        {
+          "name": "processed_batch",
+          "type": "IMAGE",
+          "link": 23
+        },
+        {
+          "name": "batch_index",
+          "type": "INT",
+          "widget": {
+            "name": "batch_index"
+          },
+          "link": 40
+        },
+        {
+          "name": "total_batches",
+          "type": "INT",
+          "widget": {
+            "name": "total_batches"
+          },
+          "link": 54
+        },
+        {
+          "name": "start_frame_number",
+          "type": "INT",
+          "widget": {
+            "name": "start_frame_number"
+          },
+          "link": 48
+        },
+        {
+          "name": "fps",
+          "type": "FLOAT",
+          "widget": {
+            "name": "fps"
+          },
+          "link": 44
+        },
+        {
+          "name": "video_source_path",
+          "type": "STRING",
+          "widget": {
+            "name": "video_source_path"
+          },
+          "link": 51
+        }
+      ],
+      "outputs": [
+        {
+          "name": "video_path",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "name": "frames_written",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "is_complete",
+          "type": "BOOLEAN",
+          "links": null
+        },
+        {
+          "name": "output_folder",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DirectVideoWriter"
+      },
+      "widgets_values": [
+        0,
+        0,
+        0,
+        3,
+        30,
+        "upscaled_video",
+        "H.265",
+        "Very High Quality",
+        "MP4",
+        true,
+        1
+      ]
+    }
+  ],
+  "links": [
+    [
+      13,
+      14,
+      0,
+      10,
+      1,
+      "SEEDVR2_DIT"
+    ],
+    [
+      14,
+      13,
+      0,
+      10,
+      2,
+      "SEEDVR2_VAE"
+    ],
+    [
+      18,
+      10,
+      0,
+      35,
+      0,
+      "IMAGE"
+    ],
+    [
+      19,
+      35,
+      0,
+      37,
+      0,
+      "STRING"
+    ],
+    [
+      21,
+      35,
+      2,
+      37,
+      2,
+      "BOOLEAN"
+    ],
+    [
+      22,
+      35,
+      1,
+      37,
+      3,
+      "INT"
+    ],
+    [
+      23,
+      10,
+      0,
+      38,
+      0,
+      "IMAGE"
+    ],
+    [
+      24,
+      10,
+      0,
+      39,
+      0,
+      "IMAGE"
+    ],
+    [
+      38,
+      42,
+      0,
+      10,
+      0,
+      "IMAGE"
+    ],
+    [
+      39,
+      42,
+      1,
+      35,
+      1,
+      "INT"
+    ],
+    [
+      40,
+      42,
+      1,
+      38,
+      1,
+      "INT"
+    ],
+    [
+      41,
+      42,
+      1,
+      39,
+      1,
+      "INT"
+    ],
+    [
+      43,
+      42,
+      4,
+      37,
+      1,
+      "FLOAT"
+    ],
+    [
+      44,
+      42,
+      4,
+      38,
+      4,
+      "FLOAT"
+    ],
+    [
+      45,
+      42,
+      4,
+      41,
+      0,
+      "FLOAT"
+    ],
+    [
+      46,
+      42,
+      4,
+      39,
+      4,
+      "FLOAT"
+    ],
+    [
+      47,
+      42,
+      5,
+      35,
+      3,
+      "INT"
+    ],
+    [
+      48,
+      42,
+      5,
+      38,
+      3,
+      "INT"
+    ],
+    [
+      49,
+      42,
+      5,
+      39,
+      3,
+      "INT"
+    ],
+    [
+      50,
+      42,
+      6,
+      39,
+      5,
+      "STRING"
+    ],
+    [
+      51,
+      42,
+      6,
+      38,
+      5,
+      "STRING"
+    ],
+    [
+      53,
+      42,
+      2,
+      35,
+      2,
+      "INT"
+    ],
+    [
+      54,
+      42,
+      2,
+      38,
+      2,
+      "INT"
+    ],
+    [
+      55,
+      42,
+      2,
+      39,
+      2,
+      "INT"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8441465687687506,
+      "offset": [
+        275.5146863652967,
+        363.2362031019806
+      ]
+    },
+    "frontendVersion": "1.34.9",
+    "workflowRendererVersion": "LG",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}

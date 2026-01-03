@@ -20,8 +20,8 @@ Installation
 bash
 
    ComfyUI/custom_nodes/
-   ├── batch_loader_with_path.py
-   ├── batch_disk_saver.py
+   ├── node_batch_loader_with_path.py
+   ├── node_batch_disk_saver.py
    ├── node_video_exporter_v2.py
    └── node_video_exporter_v3.py  # includes TrueBatchedVideoLoader
 

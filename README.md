@@ -37,8 +37,7 @@ ComfyUI loads entire videos as uncompressed 32-bit float tensors (~24MB per fram
 3. **Restart ComfyUI**
 
 4. **Load workflow:**
-   - Import `SeedVR2_HD_video_upscale_RAM_save_v5_video_export_nodes.json` in ComfyUI
-   - Or use the API version: `SeedVR2_HD_video_upscale_RAM_save_v5_video_export_nodes_api.json`
+   - Import `SeedVR2_HD_video_upscale_RAM_save_v2.json` in ComfyUI
 
 ### Basic Usage
 

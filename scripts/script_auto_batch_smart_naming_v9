@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-ComfyUI Auto Batch Queue Script with Smart Naming
+ComfyUI Auto Batch Queue Script with Smart Naming and Resume Support
 Part of SeedVR2-Memory-Efficient-Batch-Processor
 
 Output folder format: videoname_modelname_b21_o3_001
 Example: my_video_seedvr2_ema_3b_b21_o3_001
 
 Auto-increments number if same settings run multiple times.
+Supports resuming from interrupted batches.
 
 License: Apache 2.0
 """
@@ -18,8 +19,66 @@ import urllib.request
 import time
 
 
-def generate_smart_output_folder(video_path, workflow, batch_size, overlap, output_base_dir):
-    """Generate intelligent output folder name"""
+def detect_last_completed_batch(output_folder_path):
+    """
+    Detect the last completed batch by reading the frame_save_log.txt
+    Returns the last completed batch number, or -1 if none found
+    """
+    log_file = os.path.join(output_folder_path, "frame_save_log.txt")
+    
+    if not os.path.exists(log_file):
+        print(f"⚠️  No log file found in {output_folder_path}")
+        return -1
+    
+    try:
+        with open(log_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Find all batch entries
+        import re
+        batch_pattern = r'--- Batch (\d+)/(\d+) ---'
+        matches = re.findall(batch_pattern, content)
+        
+        if matches:
+            last_batch = int(matches[-1][0])
+            total_batches = int(matches[-1][1])
+            print(f"\n📊 Found existing progress:")
+            print(f"   Last completed batch: {last_batch}/{total_batches}")
+            return last_batch - 1  # Return 0-indexed batch number
+        
+    except Exception as e:
+        print(f"⚠️  Error reading log file: {e}")
+    
+    return -1
+
+
+def find_existing_output_folder(output_base_dir, folder_name):
+    """Check if an output folder exists"""
+    full_path = os.path.join(output_base_dir, folder_name)
+    if os.path.exists(full_path):
+        return full_path
+    return None
+
+
+def generate_smart_output_folder(video_path, workflow, batch_size, overlap, output_base_dir, use_existing=None):
+    """Generate intelligent output folder name or use existing one"""
+    
+    # If user specified an existing folder, use it
+    if use_existing:
+        # Check if it's a full path or just folder name
+        if os.path.isabs(use_existing):
+            if os.path.exists(use_existing):
+                return os.path.basename(use_existing)
+            else:
+                print(f"⚠️  Specified folder not found: {use_existing}")
+        else:
+            # Just folder name - check if it exists
+            full_path = os.path.join(output_base_dir, use_existing)
+            if os.path.exists(full_path):
+                print(f"✓ Using existing folder: {use_existing}")
+                return use_existing
+            else:
+                print(f"⚠️  Specified folder not found: {use_existing}")
     
     # Get video name
     video_name = os.path.splitext(os.path.basename(video_path))[0]
@@ -230,12 +289,21 @@ def main():
     """Main entry point"""
     
     if len(sys.argv) < 2:
-        print("Usage: python script.py workflow.json --video PATH --batch-size N --overlap N --format FORMAT")
+        print("Usage: python script.py workflow.json [OPTIONS]")
         print("\nOptions:")
-        print("  --video PATH         Video file path")
-        print("  --batch-size N       Batch size (e.g., 21)")
-        print("  --overlap N          Overlap (e.g., 3)")
-        print("  --format FORMAT      Image format: PNG or WebP (default: from workflow)")
+        print("  --video PATH              Video file path")
+        print("  --batch-size N            Batch size (e.g., 61)")
+        print("  --overlap N               Overlap (e.g., 3)")
+        print("  --format FORMAT           Image format: PNG or WebP")
+        print("  --continue-from N         Resume from batch N (0-indexed)")
+        print("  --use-folder NAME         Use existing output folder")
+        print("\nExamples:")
+        print("  # Start new processing:")
+        print("  python script.py workflow.json --video video.mp4 --batch-size 61 --overlap 3")
+        print("\n  # Resume from batch 127:")
+        print("  python script.py workflow.json --continue-from 127 --use-folder klip_3_V1-0001_deinterlaced_50fps_seedvr2_ema_7b_b61_o3_001")
+        print("\n  # Auto-detect and resume:")
+        print("  python script.py workflow.json --use-folder klip_3_V1-0001_deinterlaced_50fps_seedvr2_ema_7b_b61_o3_001")
         sys.exit(1)
     
     workflow_path = sys.argv[1]
@@ -260,6 +328,12 @@ def main():
         elif sys.argv[i] == "--format" and i + 1 < len(sys.argv):
             args['format'] = sys.argv[i + 1]
             i += 2
+        elif sys.argv[i] == "--continue-from" and i + 1 < len(sys.argv):
+            args['continue_from'] = int(sys.argv[i + 1])
+            i += 2
+        elif sys.argv[i] == "--use-folder" and i + 1 < len(sys.argv):
+            args['use_folder'] = sys.argv[i + 1]
+            i += 2
         else:
             i += 1
     
@@ -271,11 +345,12 @@ def main():
     # Find output directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # Try multiple possible paths
+    # Try multiple possible paths relative to script location
     possible_paths = [
-        os.path.join(script_dir, "..", "..", "ComfyUI", "output"),  # From python_embeded
-        os.path.join(script_dir, "..", "ComfyUI", "output"),
-        "E:\\comfy trellis 2.0\\ComfyUI_windows_portable\\ComfyUI\\output",  # Direct path
+        os.path.join(script_dir, "..", "..", "ComfyUI", "output"),  # From python_embeded/scripts
+        os.path.join(script_dir, "..", "ComfyUI", "output"),  # From ComfyUI root
+        os.path.join(script_dir, "ComfyUI", "output"),  # Same level as ComfyUI
+        os.path.join(script_dir, "output"),  # Direct output folder
     ]
     
     output_base_dir = None
@@ -290,6 +365,7 @@ def main():
         print(f"Tried:")
         for path in possible_paths:
             print(f"  - {os.path.abspath(path)}")
+        print(f"\nPlease ensure you're running this script from a location where ComfyUI/output can be found.")
         sys.exit(1)
     
     # Get video path
@@ -305,19 +381,46 @@ def main():
         print("ERROR: No video path specified!")
         sys.exit(1)
     
-    # Generate output folder
-    print("\nGenerating output folder name...")
+    # Generate or use existing output folder
+    print("\nDetermining output folder...")
     output_folder = generate_smart_output_folder(
         video_path,
         workflow,
         args.get('batch_size'),
         args.get('overlap'),
-        output_base_dir
+        output_base_dir,
+        use_existing=args.get('use_folder')
     )
     
     print(f"\n{'='*60}")
     print(f"OUTPUT FOLDER: {output_folder}")
     print(f"{'='*60}\n")
+    
+    # Detect resume point if using existing folder
+    start_batch = args.get('continue_from', 0)
+    
+    if args.get('use_folder'):
+        output_folder_path = os.path.join(output_base_dir, output_folder)
+        
+        # Auto-detect last completed batch if not manually specified
+        if 'continue_from' not in args:
+            last_completed = detect_last_completed_batch(output_folder_path)
+            if last_completed >= 0:
+                start_batch = last_completed + 1
+                print(f"🔄 Auto-detected resume point: batch {start_batch}")
+                
+                # Ask user to confirm
+                user_input = input(f"\nContinue from batch {start_batch}? (yes/no/enter batch number): ").strip().lower()
+                if user_input == 'no':
+                    print("Cancelled.")
+                    sys.exit(0)
+                elif user_input not in ['yes', 'y', '']:
+                    try:
+                        start_batch = int(user_input)
+                        print(f"✓ Using batch {start_batch}")
+                    except:
+                        print("Invalid input. Cancelled.")
+                        sys.exit(0)
     
     # Update workflow
     update_workflow(
@@ -339,17 +442,29 @@ def main():
     num_batches = calculate_batches(workflow)
     
     if num_batches is None:
-        num_batches = int(input("Enter number of batches: "))
+        num_batches = int(input("Enter total number of batches: "))
     
-    # ALWAYS ask for confirmation
-    confirm = input(f"\n{'='*60}\nQueue {num_batches} batches? (yes/no): ").lower()
+    # Show what will be queued
+    batches_to_queue = num_batches - start_batch
+    print(f"\n{'='*60}")
+    if start_batch > 0:
+        print(f"📊 RESUME MODE")
+        print(f"   Starting from batch: {start_batch + 1}/{num_batches}")
+        print(f"   Batches to queue: {batches_to_queue}")
+    else:
+        print(f"📊 NEW RUN")
+        print(f"   Total batches to queue: {num_batches}")
+    print(f"{'='*60}")
+    
+    # Confirm
+    confirm = input(f"\nQueue {batches_to_queue} batches (from {start_batch} to {num_batches-1})? (yes/no): ").lower()
     if confirm not in ['yes', 'y']:
         print("Cancelled.")
         sys.exit(0)
     
     # Queue batches
     queue = ComfyUIBatchQueue()
-    queued = queue.queue_all_batches(workflow_path, num_batches)
+    queued = queue.queue_all_batches(workflow_path, num_batches, start_batch)
     
     if queued:
         print(f"✓ Success! {len(queued)} batches queued.\n")

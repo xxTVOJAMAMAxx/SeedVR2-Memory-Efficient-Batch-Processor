@@ -210,9 +210,22 @@ Clear ComfyUI queue:
 - Click "Clear Queue" or restart ComfyUI
 
 ### Resume from specific batch
-If interrupted, resume from batch N:
+If interrupted, just add --use-folder and your full folder path
 ```bash
-python script.py workflow.json --video video.mp4 --start 10
+python script_auto_batch_smart_naming_v9.py SeedVR2_HD_video_upscale_RAM_save_v2.json --use-folder your_output_folder_path
+```
+Script will automatically detect already finished batches and will ask you do you want to continue from there, if you want to you can specify from what batch to continue from manualy
+```bash
+📊 Found existing progress:
+   Last completed batch: 69/420
+
+🔄 Auto-detected resume point: batch 69
+
+Continue from batch 69? (yes/no/enter batch number):
+```
+You can also do it via command line
+```bash
+python script_auto_batch_smart_naming_v9.py SeedVR2_HD_video_upscale_RAM_save_v2.json --continue-from 69 --use-folder your_output_folder_path
 ```
 
 ### Slow frame saving
